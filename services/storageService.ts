@@ -1,7 +1,7 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
-import { AppState } from '../types';
+import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { AppState, SessionMeta } from '../types';
 
 // --------------------------------------------------------
 // Firebase Configuration
@@ -31,16 +31,7 @@ try {
   console.error("Firebase initialization failed.", e);
 }
 
-const DOC_ID = 'current_sitting';
-
-// Default state to return if cloud is empty
-const DEFAULT_STATE: AppState = {
-  sitterName: '',
-  startDate: new Date().toISOString().split('T')[0],
-  totalDays: 3,
-  logs: {},
-  initialized: false,
-};
+const COLLECTION = 'sessions';
 
 export const isFirebaseConfigured = () => isConfigured;
 
@@ -66,7 +57,50 @@ const sanitizeData = (obj: any): any => {
   return sanitized;
 };
 
-export const subscribeToStore = (
+// --- Session Management ---
+
+export const createSession = async (meta: SessionMeta): Promise<void> => {
+  if (!db) throw new Error("Database not initialized");
+  const docRef = doc(db, COLLECTION, meta.id);
+  const initialState: AppState = {
+    ...meta,
+    logs: {}
+  };
+  await setDoc(docRef, sanitizeData(initialState));
+};
+
+export const listSessions = async (): Promise<SessionMeta[]> => {
+  if (!db) return [];
+  try {
+    const querySnapshot = await getDocs(collection(db, COLLECTION));
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      // Extract only metadata fields
+      return {
+        id: doc.id,
+        sitterName: data.sitterName,
+        startDate: data.startDate,
+        totalDays: data.totalDays,
+        dogs: data.dogs || [],
+        emergencyContacts: data.emergencyContacts || {},
+        createdAt: data.createdAt || Date.now()
+      } as SessionMeta;
+    });
+  } catch (e) {
+    console.error("Error listing sessions:", e);
+    return [];
+  }
+};
+
+export const deleteSession = async (sessionId: string): Promise<void> => {
+  if (!db) return;
+  await deleteDoc(doc(db, COLLECTION, sessionId));
+};
+
+// --- Live Sync ---
+
+export const subscribeToSession = (
+  sessionId: string,
   onData: (data: AppState) => void, 
   onError?: (error: string) => void
 ) => {
@@ -75,17 +109,15 @@ export const subscribeToStore = (
     return () => {};
   }
   
-  // Reference to the single document where we store the entire state
-  const docRef = doc(db, 'paws_updates', DOC_ID);
+  const docRef = doc(db, COLLECTION, sessionId);
   
   const unsubscribe = onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data() as AppState;
       onData(data);
     } else {
-      console.log("No existing data found in cloud. Initializing with default state...");
-      // CRITICAL FIX: Return default state so the app stops loading and shows Onboarding
-      onData(DEFAULT_STATE);
+      // Document was deleted or doesn't exist
+      onError?.('session_not_found');
     }
   }, (error) => {
     console.error("Sync error detail:", error);
@@ -95,7 +127,6 @@ export const subscribeToStore = (
     if (error.message.includes('permission-denied') || error.code === 'permission-denied') {
       userFriendlyError = 'firestore_permission_denied';
     } else if (error.message.includes('not-found') || error.code === 'not-found') {
-       // This typically means the database instance itself doesn't exist in the project
       userFriendlyError = 'firestore_not_found';
     }
 
@@ -105,18 +136,13 @@ export const subscribeToStore = (
   return unsubscribe;
 };
 
-export const saveToCloud = async (state: AppState): Promise<boolean> => {
-  if (!db) return false;
+export const saveSessionState = async (sessionId: string, state: AppState): Promise<void> => {
+  if (!db) return;
 
   try {
-    const docRef = doc(db, 'paws_updates', DOC_ID);
-    
-    // Sanitize state to remove undefined values before saving
+    const docRef = doc(db, COLLECTION, sessionId);
     const safeState = sanitizeData(state);
-    
-    // Using merge true is safer
     await setDoc(docRef, safeState, { merge: true });
-    return true;
   } catch (e: any) {
     console.error("Error saving to cloud", e);
     if (e.message.includes('not-found') || e.code === 'not-found') {
@@ -124,21 +150,4 @@ export const saveToCloud = async (state: AppState): Promise<boolean> => {
     }
     throw e; 
   }
-};
-
-export const clearCloudData = async (): Promise<void> => {
-    console.log("Attempting to clear cloud data...");
-    if (!db) {
-        console.error("Cannot clear data: Database not initialized");
-        throw new Error("Database connection not established");
-    }
-    try {
-        const docRef = doc(db, 'paws_updates', DOC_ID);
-        // Reset to uninitialized by writing the default state over the current data
-        await setDoc(docRef, DEFAULT_STATE);
-        console.log("Cloud data cleared successfully");
-    } catch (e) {
-        console.error("Error clearing cloud data:", e);
-        throw e;
-    }
 };

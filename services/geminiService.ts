@@ -1,18 +1,27 @@
 import { GoogleGenAI } from "@google/genai";
-import { DayLog, DOGS, TIME_SLOTS, DogName, ActivityType } from "../types";
+import { DayLog, TIME_SLOTS, DogConfig } from "../types";
+
+// Helper to safely access key without crashing if process is undefined
+const getApiKey = () => {
+  try {
+    return process.env.API_KEY || '';
+  } catch {
+    return '';
+  }
+};
 
 // Initialize the Gemini client
-// Note: In a real deployment, we would handle the API key more securely or via a proxy.
-// Since the prompt specifies getting it from process.env, we follow that pattern.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 export const generateDailySummary = async (
   dayLog: DayLog,
   dateStr: string,
-  sitterName: string
+  sitterName: string,
+  dogs: DogConfig[]
 ): Promise<string> => {
   try {
-    if (!process.env.API_KEY) {
+    const apiKey = getApiKey();
+    if (!apiKey) {
       return "API Key missing. Cannot generate summary.";
     }
 
@@ -20,13 +29,13 @@ export const generateDailySummary = async (
     const dataSummary = {
       date: dateStr,
       sitter: sitterName,
-      dogs: DOGS.map(dog => {
+      dogs: dogs.map(dog => {
         return {
-          name: dog,
-          comment: dayLog.comments[dog] || "No specific comments.",
+          name: dog.name,
+          comment: dayLog.comments[dog.name] || "No specific comments.",
           activities: TIME_SLOTS.map(slot => {
             const slotActivities = slot.activities.map(act => {
-              const taskId = `${dateStr}-${slot.id}-${dog}-${act}`;
+              const taskId = `${dateStr}-${slot.id}-${dog.name}-${act}`;
               const completed = dayLog.tasks[taskId] || false;
               return `${act}: ${completed ? 'Done' : 'Pending'}`;
             });

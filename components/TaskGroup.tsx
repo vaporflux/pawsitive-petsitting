@@ -1,11 +1,14 @@
+
 import React from 'react';
-import { TimeSlot, DOGS, ActivityType, DogName } from '../types';
+import { TimeSlot, ActivityType, DogConfig } from '../types';
 import { Check, Utensils, Droplets, CheckCircle2 } from 'lucide-react';
 
 interface TaskGroupProps {
   slot: TimeSlot;
   completedTasks: Record<string, boolean>;
+  taskTimestamps?: Record<string, number>;
   dateStr: string;
+  dogs: DogConfig[];
   onToggle: (taskId: string) => void;
   onCompleteAll: (slotId: string) => void;
   isReadOnly: boolean;
@@ -14,7 +17,9 @@ interface TaskGroupProps {
 export const TaskGroup: React.FC<TaskGroupProps> = ({ 
   slot, 
   completedTasks, 
+  taskTimestamps,
   dateStr, 
+  dogs,
   onToggle, 
   onCompleteAll,
   isReadOnly 
@@ -22,6 +27,22 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
   
   const getIcon = (activity: ActivityType) => {
     return activity === ActivityType.Feeding ? <Utensils size={14} /> : <Droplets size={14} />;
+  };
+
+  const getDogColorClasses = (color: string) => {
+    switch(color) {
+      case 'blue': return 'bg-blue-100 text-blue-700';
+      case 'pink': return 'bg-pink-100 text-pink-700';
+      case 'purple': return 'bg-purple-100 text-purple-700';
+      case 'orange': return 'bg-orange-100 text-orange-700';
+      case 'teal': return 'bg-teal-100 text-teal-700';
+      case 'indigo': return 'bg-indigo-100 text-indigo-700';
+      default: return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  const formatTime = (timestamp: number) => {
+    return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   };
 
   return (
@@ -45,22 +66,20 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
       </div>
       
       <div className="p-2">
-        {DOGS.map((dog) => (
-          <div key={dog} className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors gap-3 sm:gap-0">
+        {dogs.map((dog) => (
+          <div key={dog.name} className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors gap-3 sm:gap-0">
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold 
-                ${dog === DogName.Duke ? 'bg-blue-100 text-blue-700' : 
-                  dog === DogName.Lulu ? 'bg-pink-100 text-pink-700' : 
-                  'bg-purple-100 text-purple-700'}`}>
-                {dog[0]}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase ${getDogColorClasses(dog.color)}`}>
+                {dog.name[0]}
               </div>
-              <span className="text-slate-700 font-medium text-sm">{dog}</span>
+              <span className="text-slate-700 font-medium text-sm">{dog.name}</span>
             </div>
             
             <div className="flex gap-2 flex-wrap">
               {slot.activities.map((activity) => {
-                 const taskId = `${dateStr}-${slot.id}-${dog}-${activity}`;
+                 const taskId = `${dateStr}-${slot.id}-${dog.name}-${activity}`;
                  const isDone = completedTasks[taskId];
+                 const timestamp = taskTimestamps?.[taskId];
 
                  return (
                    <button
@@ -78,6 +97,11 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
                     {isDone && <Check size={12} className="animate-in zoom-in duration-200" />}
                     <span className="flex items-center gap-1">
                       {getIcon(activity)} {activity}
+                      {isDone && timestamp && (
+                        <span className="text-[10px] italic text-white/80 ml-1 font-normal border-l border-white/30 pl-1.5">
+                          {formatTime(timestamp)}
+                        </span>
+                      )}
                     </span>
                    </button>
                  );

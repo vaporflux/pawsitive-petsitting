@@ -1,18 +1,19 @@
 
-export enum DogName {
-  Duke = 'Duke',
-  Lulu = 'Lulu',
-  Molly = 'Molly'
-}
-
 export enum ActivityType {
   Bathroom = 'Bathroom',
   Feeding = 'Feeding',
 }
 
+export type DogColor = 'blue' | 'pink' | 'purple' | 'orange' | 'teal' | 'indigo';
+
+export interface DogConfig {
+  name: string;
+  color: DogColor;
+}
+
 export interface Task {
   id: string;
-  dog: DogName;
+  dog: string;
   activity: ActivityType;
   completed: boolean;
   timestamp?: number;
@@ -22,25 +23,45 @@ export interface TimeSlot {
   id: string;
   label: string;
   timeRange: string;
-  activities: ActivityType[]; // Activities applicable to all dogs in this slot
+  activities: ActivityType[];
 }
 
 export interface DayLog {
   date: string; // ISO Date String YYYY-MM-DD
-  morningPhoto?: string | null; // Legacy field
-  eveningPhoto?: string | null; // Legacy field
-  photos?: string[]; // Base64 strings for multiple photos
+  photos?: string[]; // Base64 strings
   tasks: Record<string, boolean>; // TaskID -> Completed
-  comments: Record<DogName, string>;
+  taskTimestamps?: Record<string, number>; // TaskID -> Timestamp (ms)
+  comments: Record<string, string>; // DogName -> Comment
   aiSummary?: string;
+  
+  // Legacy fields for backward compatibility type checking
+  morningPhoto?: string | null; 
+  eveningPhoto?: string | null;
 }
 
-export interface AppState {
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+}
+
+export interface EmergencyContacts {
+  primary: EmergencyContact;
+  secondary: EmergencyContact;
+  vet: EmergencyContact;
+}
+
+export interface SessionMeta {
+  id: string;
   sitterName: string;
   startDate: string;
   totalDays: number;
+  dogs: DogConfig[];
+  emergencyContacts: EmergencyContacts;
+  createdAt: number;
+}
+
+export interface AppState extends SessionMeta {
   logs: Record<string, DayLog>; // Keyed by date string
-  initialized: boolean;
 }
 
 export const TIME_SLOTS: TimeSlot[] = [
@@ -69,5 +90,3 @@ export const TIME_SLOTS: TimeSlot[] = [
     activities: [ActivityType.Bathroom],
   },
 ];
-
-export const DOGS = [DogName.Duke, DogName.Lulu, DogName.Molly];
