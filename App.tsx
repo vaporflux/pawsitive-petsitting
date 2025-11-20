@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, DayLog, TIME_SLOTS, DogConfig } from './types';
 import { saveSessionState, subscribeToSession, deleteSession, isFirebaseConfigured } from './services/storageService';
@@ -8,6 +7,7 @@ import { PhotoUpload } from './components/PhotoUpload';
 import { DogComments } from './components/DogComments';
 import { Lobby } from './components/Lobby';
 import { SessionWizard } from './components/SessionWizard';
+import { InstallPrompt } from './components/InstallPrompt';
 import { ChevronLeft, ChevronRight, Dog, Sparkles, Eye, Edit3, AlertTriangle, Database, BellRing, X, Phone, ShieldAlert, LogOut, RefreshCw } from 'lucide-react';
 
 // Helper to get local date string YYYY-MM-DD
@@ -66,15 +66,26 @@ const App: React.FC = () => {
       return <div className="p-10 text-center text-red-500">Firebase configuration missing. Please configure storageService.ts</div>;
   }
 
-  if (view === 'wizard') {
-    return <SessionWizard onComplete={handleCreateComplete} onCancel={() => setView('lobby')} />;
-  }
+  // Helper to determine which main view to render
+  const renderContent = () => {
+    if (view === 'wizard') {
+      return <SessionWizard onComplete={handleCreateComplete} onCancel={() => setView('lobby')} />;
+    }
+  
+    if (view === 'tracker' && sessionId) {
+      return <SessionTracker sessionId={sessionId} onExit={handleBackToLobby} />;
+    }
+  
+    return <Lobby onJoin={handleJoinSession} onCreate={() => setView('wizard')} />;
+  };
 
-  if (view === 'tracker' && sessionId) {
-    return <SessionTracker sessionId={sessionId} onExit={handleBackToLobby} />;
-  }
-
-  return <Lobby onJoin={handleJoinSession} onCreate={() => setView('wizard')} />;
+  return (
+    <>
+      {/* Global Install Button (Visible on Mobile) */}
+      <InstallPrompt />
+      {renderContent()}
+    </>
+  );
 };
 
 // --- Sub-Component: The Main Tracker Logic ---

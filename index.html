@@ -1,9 +1,24 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Standard Favicon Fallback -->
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128/emoji_u1f436.png">
+    
+    <!-- iOS Touch Icon - Initially set to a safe external PNG, then upgraded by script -->
+    <link id="apple-touch-icon" rel="apple-touch-icon" href="https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/512/emoji_u1f436.png" />
+    
+    <!-- Viewport fit cover handles iPhone Notch/Dynamic Island safe areas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pawsitive">
+    
+    <link rel="manifest" href="/manifest.json">
     <title>Pawsitive Petsitting</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -28,24 +43,71 @@
         }
       }
     </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
-    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
-    "vite": "https://aistudiocdn.com/vite@^7.2.4",
-    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
-  }
-}
-</script>
+    <!-- Import Map & Polyfills -->
+    <script type="importmap">
+    {
+      "imports": {
+        "react": "https://aistudiocdn.com/react@^19.2.0",
+        "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+        "react/": "https://aistudiocdn.com/react@^19.2.0/",
+        "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+        "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+        "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+        "vite": "https://aistudiocdn.com/vite@^7.2.4",
+        "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+      }
+    }
+    </script>
 <link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-primary-200 selection:text-primary-900">
     <div id="root"></div>
+    
+    <!-- Icon Generation Script for iOS -->
+    <script>
+      (function() {
+        try {
+          // Create a canvas to generate a custom icon on the fly
+          var canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          var ctx = canvas.getContext('2d');
+
+          // 1. Draw the background (Teal / Primary-500)
+          ctx.fillStyle = '#14b8a6'; 
+          ctx.fillRect(0, 0, 512, 512);
+
+          // 2. Draw the Dog Emoji
+          ctx.font = '350px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🐶', 256, 266); // Slightly offset y to center visual weight
+
+          // 3. Convert to PNG Data URL
+          var iconUrl = canvas.toDataURL('image/png');
+
+          // 4. Update the apple-touch-icon link
+          var link = document.getElementById('apple-touch-icon');
+          if (link) {
+            link.href = iconUrl;
+          } else {
+            link = document.createElement('link');
+            link.id = 'apple-touch-icon';
+            link.rel = 'apple-touch-icon';
+            link.href = iconUrl;
+            document.head.appendChild(link);
+          }
+          
+          // Update standard icon too just in case
+          var fav = document.querySelector('link[rel="icon"]');
+          if(fav) fav.href = iconUrl;
+          
+        } catch (e) {
+          console.error("Icon generation failed", e);
+        }
+      })();
+    </script>
+
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
