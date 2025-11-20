@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { DogConfig, DogColor, EmergencyContacts } from '../types';
-import { createSession } from '../services/storageService';
+import { createSession, checkSessionExists } from '../services/storageService';
 import { ChevronLeft, Dog, Check, Loader2, Calendar, User, ChevronRight, Phone, ShieldAlert } from 'lucide-react';
 
 interface SessionWizardProps {
@@ -39,6 +39,18 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
     { id: 'indigo', hex: 'bg-indigo-500' },
   ];
 
+  // Helper to format phone numbers as (XXX) XXX-XXXX
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return value;
+    const phoneNumber = value.replace(/[^\d]/g, '');
+    const phoneNumberLength = phoneNumber.length;
+    if (phoneNumberLength < 4) return phoneNumber;
+    if (phoneNumberLength < 7) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    }
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+  };
+
   const handleDogCountChange = (count: number) => {
     setNumDogs(count);
     const newDogs = [...dogs];
@@ -58,10 +70,45 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
     setDogs(newDogs);
   };
 
+  // Generate a Friendly Code: SITTER-NUMBER (e.g., SARAH-42)
+  const generateFriendlyCode = () => {
+    // 1. Sitter First Name (Cleaned, only letters)
+    const sitterPart = (sitterName.split(' ')[0] || 'SITTER')
+      .replace(/[^a-zA-Z]/g, '')
+      .substring(0, 10)
+      .toUpperCase();
+
+    // 2. Random 2-digit number (10-99)
+    const num = Math.floor(Math.random() * 90 + 10);
+
+    return `${sitterPart}-${num}`;
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
-       const id = Math.random().toString(36).substring(2, 8) + Date.now().toString(36).substring(4);
+       // Collision Detection Loop
+       let id = generateFriendlyCode();
+       let isUnique = false;
+       let attempts = 0;
+
+       // Try up to 5 times to get a unique friendly ID
+       while (!isUnique && attempts < 5) {
+          const exists = await checkSessionExists(id);
+          if (exists) {
+             // Code taken! Roll the dice again with a new random number
+             console.log(`Code ${id} taken, retrying...`);
+             id = generateFriendlyCode();
+             attempts++;
+          } else {
+             isUnique = true;
+          }
+       }
+
+       // Fallback: If Sarah is extremely popular and we failed 5 times, add a 3rd digit to ensure uniqueness
+       if (!isUnique) {
+          id = `${id}-${Math.floor(Math.random() * 9)}`;
+       }
        
        const emergencyContacts: EmergencyContacts = {
          primary: { name: primaryName || 'Primary', phone: primaryPhone },
@@ -81,6 +128,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
        onComplete(id);
     } catch (e) {
        alert("Error creating session. Please check connection.");
+       console.error(e);
        setLoading(false);
     }
   };
@@ -221,8 +269,9 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     />
                     <input 
                       value={primaryPhone}
-                      onChange={e => setPrimaryPhone(e.target.value)}
-                      placeholder="Phone Number"
+                      onChange={e => setPrimaryPhone(formatPhoneNumber(e.target.value))}
+                      maxLength={14}
+                      placeholder="(555) 555-5555"
                       type="tel"
                       className="w-full p-2 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary-400"
                     />
@@ -241,8 +290,9 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     />
                     <input 
                       value={secondaryPhone}
-                      onChange={e => setSecondaryPhone(e.target.value)}
-                      placeholder="Phone Number"
+                      onChange={e => setSecondaryPhone(formatPhoneNumber(e.target.value))}
+                      maxLength={14}
+                      placeholder="(555) 555-5555"
                       type="tel"
                       className="w-full p-2 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary-400"
                     />
@@ -261,8 +311,9 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     />
                     <input 
                       value={vetPhone}
-                      onChange={e => setVetPhone(e.target.value)}
-                      placeholder="Vet Phone"
+                      onChange={e => setVetPhone(formatPhoneNumber(e.target.value))}
+                      maxLength={14}
+                      placeholder="(555) 555-5555"
                       type="tel"
                       className="w-full p-2 bg-white text-slate-900 border border-rose-200 rounded-lg text-sm outline-none focus:border-rose-400"
                     />
@@ -274,7 +325,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                  disabled={loading}
                  className="w-full bg-primary-600 disabled:opacity-50 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
                >
-                 {loading ? <Loader2 className="animate-spin" /> : <><Check size={18} /> Complete Setup</>}
+                 {loading ? <Loader2 className="animate-spin" /> : <><Check size={18} /> Create & Get Code</>}
                </button>
             </div>
           )}

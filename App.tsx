@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { AppState, DayLog, TIME_SLOTS, DogConfig } from './types';
 import { saveSessionState, subscribeToSession, deleteSession, isFirebaseConfigured } from './services/storageService';
@@ -8,7 +9,7 @@ import { DogComments } from './components/DogComments';
 import { Lobby } from './components/Lobby';
 import { SessionWizard } from './components/SessionWizard';
 import { InstallPrompt } from './components/InstallPrompt';
-import { ChevronLeft, ChevronRight, Dog, Sparkles, Eye, Edit3, AlertTriangle, Database, BellRing, X, Phone, ShieldAlert, LogOut, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Dog, Sparkles, Eye, Edit3, BellRing, X, Phone, ShieldAlert, LogOut, RefreshCw, Share2, CheckCircle, Copy, MessageCircle } from 'lucide-react';
 
 // Helper to get local date string YYYY-MM-DD
 const getLocalISODate = () => {
@@ -17,13 +18,9 @@ const getLocalISODate = () => {
   return new Date(d.getTime() - offset).toISOString().split('T')[0];
 };
 
-// Safe check for API Key presence
+// Safe check for API Key presence using the replaced string
 const hasApiKey = () => {
-  try {
-    return !!process.env.API_KEY;
-  } catch {
-    return false;
-  }
+  return !!process.env.API_KEY;
 };
 
 const App: React.FC = () => {
@@ -45,9 +42,14 @@ const App: React.FC = () => {
     setSessionId(id);
     setView('tracker');
     // Update URL without reloading
-    const url = new URL(window.location.href);
-    url.searchParams.set('session', id);
-    window.history.pushState({}, '', url);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('session', id);
+      window.history.pushState({}, '', url);
+    } catch (e) {
+      // Ignore errors in preview environments where pushState might be blocked
+      console.debug("URL update skipped in preview");
+    }
   };
 
   const handleCreateComplete = (id: string) => {
@@ -57,9 +59,13 @@ const App: React.FC = () => {
   const handleBackToLobby = () => {
     setSessionId(null);
     setView('lobby');
-    const url = new URL(window.location.href);
-    url.searchParams.delete('session');
-    window.history.pushState({}, '', url);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('session');
+      window.history.pushState({}, '', url);
+    } catch (e) {
+      console.debug("URL update skipped in preview");
+    }
   };
 
   if (!isFirebaseConfigured()) {
@@ -89,7 +95,6 @@ const App: React.FC = () => {
 };
 
 // --- Sub-Component: The Main Tracker Logic ---
-// This encapsulates all the logic previously in App.tsx, but scoped to a specific session ID
 
 interface SessionTrackerProps {
   sessionId: string;
@@ -109,6 +114,8 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
   const [showToast, setShowToast] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showCopied, setShowCopied] = useState(false);
   
   const isRemoteUpdate = useRef(false);
 
@@ -170,6 +177,43 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
     const day = String(start.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }, [state, currentDayIndex]);
+
+  const getShareUrl = () => {
+    return `${window.location.origin}?session=${sessionId}`;
+  };
+
+  const handleShare = async () => {
+    const url = getShareUrl();
+    const text = `Join my Pawsitive Petsitting session for ${state?.dogs.map(d => d.name).join(', ')}. Code: ${sessionId}`;
+    
+    // 1. Try Native Share (Mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Pawsitive Petsitting',
+          text: text,
+          url: url
+        });
+        return;
+      } catch (err) {
+        // User cancelled or failed, fall through to modal
+      }
+    }
+
+    // 2. Fallback to Modal
+    setShowShareModal(true);
+  };
+
+  const copyToClipboard = async () => {
+    const url = getShareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      setShowCopied(true);
+      setTimeout(() => setShowCopied(false), 2000);
+    } catch (err) {
+      // ignore
+    }
+  };
 
   if (loading) return <div className="flex h-screen items-center justify-center"><RefreshCw className="animate-spin text-primary-500" /></div>;
   if (dbError === 'session_not_found') return <div className="p-10 text-center">Session not found or deleted. <button onClick={onExit} className="underline text-blue-500">Back to Lobby</button></div>;
@@ -257,6 +301,14 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
   return (
     <div className="min-h-screen bg-slate-50 pb-20 relative">
       
+      {/* Copied Toast */}
+      <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showCopied ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0 pointer-events-none'}`}>
+        <div className="bg-slate-800 text-white px-4 py-2 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium">
+          <CheckCircle size={14} className="text-emerald-400" />
+          <span>Link Copied!</span>
+        </div>
+      </div>
+
       {/* Toast - Added pointer-events logic to prevent blocking header buttons */}
       <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${showToast ? 'translate-y-0 opacity-100 pointer-events-auto' : '-translate-y-8 opacity-0 pointer-events-none'}`}>
         <div className="bg-slate-800 text-white px-4 py-2 rounded-full shadow-xl flex items-center gap-2 text-sm font-medium">
@@ -312,6 +364,30 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
           </div>
         </div>
       )}
+      
+      {/* Share Modal (Fallback if native share fails) */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowShareModal(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl" onClick={e => e.stopPropagation()}>
+             <div className="flex items-center justify-between mb-4">
+               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2"><Share2 size={20} /> Share Session</h3>
+               <button onClick={() => setShowShareModal(false)} className="text-slate-400 hover:text-slate-600 p-1"><X size={20}/></button>
+             </div>
+             
+             <p className="text-sm text-slate-600 mb-4">Send this code or link to the owner/sitter to give them access.</p>
+             
+             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4 text-center">
+                <div className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Access Code</div>
+                <div className="text-2xl font-mono font-bold text-slate-900 tracking-wider">{sessionId}</div>
+             </div>
+             
+             <button onClick={copyToClipboard} className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg shadow-primary-200">
+                {showCopied ? <CheckCircle size={18} /> : <Copy size={18} />}
+                {showCopied ? 'Copied!' : 'Copy Join Link'}
+             </button>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
@@ -336,7 +412,12 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
                  </div>
                  <div>
                    <h1 className="font-bold text-slate-800 leading-none">Pawsitive Petsitting</h1>
-                   <p className="text-xs text-slate-500">Sitter: {state.sitterName}</p>
+                   <div className="flex items-center gap-2">
+                      <p className="text-xs text-slate-500">Sitter: {state.sitterName}</p>
+                      <button onClick={handleShare} className="flex items-center gap-1 text-[10px] font-bold bg-primary-50 text-primary-700 border border-primary-100 px-2 py-0.5 rounded hover:bg-primary-100 transition-colors">
+                        <Share2 size={10} /> Share
+                      </button>
+                   </div>
                  </div>
               </div>
               <div className="flex items-center gap-2 self-end sm:self-auto">

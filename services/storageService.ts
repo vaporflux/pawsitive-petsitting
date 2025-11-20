@@ -1,6 +1,6 @@
 
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc, getDoc } from 'firebase/firestore';
 import { AppState, SessionMeta } from '../types';
 
 // --------------------------------------------------------
@@ -59,9 +59,25 @@ const sanitizeData = (obj: any): any => {
 
 // --- Session Management ---
 
+export const checkSessionExists = async (sessionId: string): Promise<boolean> => {
+  if (!db) return false;
+  try {
+    const docRef = doc(db, COLLECTION, sessionId);
+    const snapshot = await getDoc(docRef);
+    return snapshot.exists();
+  } catch (e) {
+    console.error("Error checking session existence:", e);
+    return false;
+  }
+};
+
 export const createSession = async (meta: SessionMeta): Promise<void> => {
   if (!db) throw new Error("Database not initialized");
+  
+  // Double check existence to prevent overwrite at the storage level
+  // (Though logic should handle this in UI, this is a failsafe)
   const docRef = doc(db, COLLECTION, meta.id);
+  
   const initialState: AppState = {
     ...meta,
     logs: {}

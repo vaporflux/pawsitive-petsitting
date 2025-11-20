@@ -1,17 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 import { DayLog, TIME_SLOTS, DogConfig } from "../types";
 
-// Helper to safely access key without crashing if process is undefined
-const getApiKey = () => {
-  try {
-    return process.env.API_KEY || '';
-  } catch {
-    return '';
-  }
-};
+// The build tool replaces process.env.API_KEY with a string literal.
+// We default to '' if the replacement is empty.
+const API_KEY = process.env.API_KEY || '';
 
 // Initialize the Gemini client
-const ai = new GoogleGenAI({ apiKey: getApiKey() });
+const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export const generateDailySummary = async (
   dayLog: DayLog,
@@ -20,8 +15,7 @@ export const generateDailySummary = async (
   dogs: DogConfig[]
 ): Promise<string> => {
   try {
-    const apiKey = getApiKey();
-    if (!apiKey) {
+    if (!API_KEY) {
       return "API Key missing. Cannot generate summary.";
     }
 
