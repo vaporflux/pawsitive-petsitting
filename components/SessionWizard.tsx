@@ -176,18 +176,25 @@ className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outlin
   </div>
 
   {/* Days */}
-  <div>
-    <label className="block text-sm font-medium text-slate-700 mb-1">Days</label>
+<div>
+  <label className="block text-sm font-medium text-slate-700 mb-1">
+    Number of Days
+  </label>
+  <div className="bg-white p-3 rounded-xl border border-slate-200">
     <input
-      type="number"
+      type="range"
       min="1"
       max="30"
       value={totalDays}
       onChange={e => setTotalDays(parseInt(e.target.value))}
-      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+      className="w-full accent-primary-600 cursor-pointer"
     />
+    <div className="text-center text-sm font-medium text-slate-700 mt-2">
+      {totalDays} {totalDays === 1 ? 'day' : 'days'}
+    </div>
   </div>
 </div>
+
 
                <button 
                  disabled={!sitterName}
