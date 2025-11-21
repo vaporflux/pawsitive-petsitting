@@ -148,7 +148,8 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
           </div>
         </div>
 
-        <div className="p-8">
+        {/* Reduced padding on mobile (p-5) to prevent input overflow, larger (p-8) on desktop */}
+        <div className="p-5 sm:p-8">
           {step === 1 && (
             <div className="space-y-6">
                <div>
@@ -173,7 +174,8 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                       type="date"
                       value={startDate}
                       onChange={e => setStartDate(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+                      // Added appearance-none and min-w-0 to fix iOS rendering issues
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none min-w-0 text-left"
                     />
                  </div>
                </div>
