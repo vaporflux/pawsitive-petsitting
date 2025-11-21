@@ -176,25 +176,23 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
       />
     </div>
 
-    {/* Number of Days (slider) */}
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1">
-        Number of Days
-      </label>
-      <div className="bg-white p-3 rounded-xl border border-slate-200">
-        <input
-          type="range"
-          min="1"
-          max="30"
-          value={totalDays}
-          onChange={e => setTotalDays(parseInt(e.target.value))}
-          className="w-full accent-primary-600 cursor-pointer"
-        />
-        <div className="text-center text-sm font-medium text-slate-700 mt-2">
-          {totalDays} {totalDays === 1 ? 'day' : 'days'}
-        </div>
-      </div>
-    </div>
+{/* Number of Days (wheel-style picker via native select) */}
+<div>
+  <label className="block text-sm font-medium text-slate-700 mb-1">
+    Number of Days
+  </label>
+  <select
+    value={totalDays}
+    onChange={e => setTotalDays(parseInt(e.target.value))}
+    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+  >
+    {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
+      <option key={day} value={day}>
+        {day} {day === 1 ? 'day' : 'days'}
+      </option>
+    ))}
+  </select>
+</div>
 
     {/* Next button */}
     <button
