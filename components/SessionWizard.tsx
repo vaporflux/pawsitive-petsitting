@@ -163,7 +163,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     />
                  </div>
                </div>
-               <div className="grid grid-cols-2 gap-4">
+               <div className="grid grid-cols-[2fr_1fr] gap-4">
                  <div>
                    <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
                    <input 
