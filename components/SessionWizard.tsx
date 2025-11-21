@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { DogConfig, DogColor, EmergencyContacts } from '../types';
 import { createSession, checkSessionExists } from '../services/storageService';
-import { ChevronLeft, Dog, Check, Loader2, Calendar, User, ChevronRight, Phone, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, Dog, Check, Loader2, Calendar, User, ChevronRight, Phone, ShieldAlert, ChevronDown } from 'lucide-react';
 
 interface SessionWizardProps {
   onComplete: (sessionId: string) => void;
@@ -182,13 +182,20 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                
                <div>
                  <label className="block text-sm font-medium text-slate-700 mb-1">Number of Days</label>
-                 <input 
-                   type="number"
-                   min="1" max="30"
-                   value={totalDays}
-                   onChange={e => setTotalDays(parseInt(e.target.value))}
-                   className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
-                 />
+                 <div className="relative">
+                   <select 
+                     value={totalDays}
+                     onChange={e => setTotalDays(parseInt(e.target.value))}
+                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
+                   >
+                     {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
+                       <option key={day} value={day}>
+                         {day} Day{day > 1 ? 's' : ''}
+                       </option>
+                     ))}
+                   </select>
+                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                 </div>
                </div>
                
                <button 
