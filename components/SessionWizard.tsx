@@ -149,62 +149,63 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
         </div>
 
         <div className="p-8">
-          {step === 1 && (
-            <div className="space-y-6">
-               <div>
-                 <label className="block text-sm font-medium text-slate-700 mb-1">Sitter Name</label>
-                 <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input 
-                      value={sitterName}
-                      onChange={e => setSitterName(e.target.value)}
-className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
-                      placeholder="e.g. Sarah"
-                    />
-                 </div>
-               </div>
-<div className="space-y-6">
-  {/* Start Date */}
-  <div>
-    <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-    <input
-      type="date"
-      value={startDate}
-      onChange={e => setStartDate(e.target.value)}
-className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
-    />
-  </div>
-
-  {/* Days */}
-<div>
-  <label className="block text-sm font-medium text-slate-700 mb-1">
-    Number of Days
-  </label>
-  <div className="bg-white p-3 rounded-xl border border-slate-200">
-    <input
-      type="range"
-      min="1"
-      max="30"
-      value={totalDays}
-      onChange={e => setTotalDays(parseInt(e.target.value))}
-      className="w-full accent-primary-600 cursor-pointer"
-    />
-    <div className="text-center text-sm font-medium text-slate-700 mt-2">
-      {totalDays} {totalDays === 1 ? 'day' : 'days'}
+{step === 1 && (
+  <div className="space-y-6">
+    {/* Sitter Name */}
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">Sitter Name</label>
+      <div className="relative">
+        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <input
+          value={sitterName}
+          onChange={e => setSitterName(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+          placeholder="e.g. Sarah"
+        />
+      </div>
     </div>
+
+    {/* Start Date */}
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+      <input
+        type="date"
+        value={startDate}
+        onChange={e => setStartDate(e.target.value)}
+        className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none [min-width:0]"
+      />
+    </div>
+
+    {/* Number of Days (slider) */}
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1">
+        Number of Days
+      </label>
+      <div className="bg-white p-3 rounded-xl border border-slate-200">
+        <input
+          type="range"
+          min="1"
+          max="30"
+          value={totalDays}
+          onChange={e => setTotalDays(parseInt(e.target.value))}
+          className="w-full accent-primary-600 cursor-pointer"
+        />
+        <div className="text-center text-sm font-medium text-slate-700 mt-2">
+          {totalDays} {totalDays === 1 ? 'day' : 'days'}
+        </div>
+      </div>
+    </div>
+
+    {/* Next button */}
+    <button
+      disabled={!sitterName}
+      onClick={() => setStep(2)}
+      className="w-full bg-primary-600 disabled:opacity-50 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
+    >
+      Next <ChevronRight size={18} />
+    </button>
   </div>
-</div>
-
-
-               <button 
-                 disabled={!sitterName}
-                 onClick={() => setStep(2)}
-                 className="w-full bg-primary-600 disabled:opacity-50 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
-               >
-                 Next <ChevronRight size={18} />
-               </button>
-            </div>
-          )}
+)}
 
           {step === 2 && (
             <div className="space-y-6">
