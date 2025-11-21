@@ -1,6 +1,7 @@
+
 {
-  "name": "Pawsitive Petsitting",
-  "short_name": "Pawsitive",
+  "name": "Pawsitively Petsitting",
+  "short_name": "Pawsitively",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait"

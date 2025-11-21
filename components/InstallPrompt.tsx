@@ -80,7 +80,7 @@ export const InstallPrompt = () => {
              
              <div className="flex items-center gap-3 mb-4">
                 <div className="bg-primary-100 p-2.5 rounded-xl text-primary-600"><Smartphone size={24} /></div>
-                <h3 className="text-lg font-bold text-slate-800">Install Pawsitive</h3>
+                <h3 className="text-lg font-bold text-slate-800">Install Pawsitively</h3>
              </div>
              
              {isIOS ? (

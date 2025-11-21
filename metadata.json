@@ -1,6 +1,7 @@
+
 {
-  "name": "Pawsitive Petsitting",
-  "description": "A cloud-synced pet sitting companion app for Duke, Lulu, and Molly, featuring daily activity tracking, photo updates, and AI-generated daily summaries.",
+  "name": "Pawsitively Petsitting",
+  "description": "A cloud-synced pet sitting companion app for keeping close to your fur-babies, featuring daily activity tracking, photo updates, and AI-generated daily summaries.",
   "requestFramePermissions": [
     "camera",
     "microphone"

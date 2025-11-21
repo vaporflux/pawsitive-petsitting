@@ -184,13 +184,13 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
 
   const handleShare = async () => {
     const url = getShareUrl();
-    const text = `Join my Pawsitive Petsitting session for ${state?.dogs.map(d => d.name).join(', ')}. Code: ${sessionId}`;
+    const text = `Join my Pawsitively Petsitting session for ${state?.dogs.map(d => d.name).join(', ')}. Code: ${sessionId}`;
     
     // 1. Try Native Share (Mobile)
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Pawsitive Petsitting',
+          title: 'Pawsitively Petsitting',
           text: text,
           url: url
         });
@@ -417,7 +417,7 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
                     ))}
                  </div>
                  <div>
-                   <h1 className="font-bold text-slate-800 leading-none">Pawsitive Petsitting</h1>
+                   <h1 className="font-bold text-slate-800 leading-none">Pawsitively Petsitting</h1>
                    <div className="flex items-center gap-2">
                       <p className="text-xs text-slate-500">Sitter: {state.sitterName}</p>
                       <button onClick={handleShare} className="flex items-center gap-1 text-[10px] font-bold bg-primary-50 text-primary-700 border border-primary-100 px-2 py-0.5 rounded hover:bg-primary-100 transition-colors">

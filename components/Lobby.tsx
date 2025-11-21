@@ -108,7 +108,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onJoin, onCreate }) => {
               <div className="bg-blue-100 p-3 rounded-full ring-4 ring-slate-50 z-10"><Dog className="text-blue-600" size={32} /></div>
               <div className="bg-pink-100 p-3 rounded-full ring-4 ring-slate-50 z-0"><Dog className="text-pink-600" size={32} /></div>
            </div>
-           <h1 className="text-2xl font-bold text-slate-800">Pawsitive Petsitting</h1>
+           <h1 className="text-2xl font-bold text-slate-800">Pawsitively Petsitting</h1>
            <p className="text-sm text-slate-500 italic mt-2 text-center">Stay close to your fur-babies, even from afar.</p>
         </div>
 
