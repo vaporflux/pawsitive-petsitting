@@ -105,7 +105,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
           }
        }
 
-       // Fallback: If Sarah is extremely popular and we failed 5 times, add a 3rd digit to ensure uniqueness
+       // Fallback: If code taken 5 times, add a digit
        if (!isUnique) {
           id = `${id}-${Math.floor(Math.random() * 9)}`;
        }
@@ -163,27 +163,30 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     />
                  </div>
                </div>
+               
+               {/* Fixed Grid Layout: Exactly 2 columns of equal width */}
                <div className="grid grid-cols-2 gap-4">
-                 <div>
+                 <div className="min-w-0">
                    <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
                    <input 
                      type="date"
                      value={startDate}
                      onChange={e => setStartDate(e.target.value)}
-                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+                     className="w-full px-2 sm:px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 text-sm sm:text-base"
                    />
                  </div>
-                 <div>
+                 <div className="min-w-0">
                    <label className="block text-sm font-medium text-slate-700 mb-1">Days</label>
                    <input 
                      type="number"
                      min="1" max="30"
                      value={totalDays}
                      onChange={e => setTotalDays(parseInt(e.target.value))}
-                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+                     className="w-full px-2 sm:px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 text-sm sm:text-base"
                    />
                  </div>
                </div>
+               
                <button 
                  disabled={!sitterName}
                  onClick={() => setStep(2)}
