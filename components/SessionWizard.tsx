@@ -171,7 +171,7 @@ className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outlin
       type="date"
       value={startDate}
       onChange={e => setStartDate(e.target.value)}
-      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
     />
   </div>
 
