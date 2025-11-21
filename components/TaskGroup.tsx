@@ -47,22 +47,27 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
     return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   };
 
-  const handleNotify = () => {
-    if (!ownerPhone) return;
-    
-    // Create a cheerful message
-    const text = `Pawsitive Update: The ${slot.label} is complete for ${dogs.map(d => d.name).join(', ')}! 🐾`;
-    
-    // Clean phone number (remove non-digits)
-    const cleanPhone = ownerPhone.replace(/[^\d]/g, '');
-    
-    // Construct SMS link (works on iOS and Android)
-    // Note: '&' is often safer for iOS to separate body, '?' is standard. 
-    // Using the most compatible hybrid approach usually involves just window.open
-    const url = `sms:${cleanPhone}?&body=${encodeURIComponent(text)}`;
-    
-    window.location.href = url;
-  };
+const handleNotify = async () => {
+  if (!ownerPhone) return;
+
+  try {
+    await fetch("/api/send-activity-sms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: ownerPhone,
+        petNames: dogs.map(d => d.name),
+        slotLabel: slot.label
+      }),
+    });
+
+    // Optional: show a visual confirmation later
+    // alert("Owner notified!");
+  } catch (err) {
+    console.error("Failed to send SMS notification", err);
+  }
+};
+
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-4">
