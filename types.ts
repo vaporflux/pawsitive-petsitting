@@ -45,7 +45,7 @@ export interface EmergencyContact {
 }
 
 export interface EmergencyContacts {
-  primary: EmergencyContact;
+  owner: EmergencyContact; // Renamed from primary
   secondary: EmergencyContact;
   vet: EmergencyContact;
 }
@@ -85,7 +85,7 @@ export const TIME_SLOTS: TimeSlot[] = [
   },
   {
     id: 'bedtime',
-    label: 'Bedtime',
+    label: 'Bedtime Routine',
     timeRange: 'Evening',
     activities: [ActivityType.Bathroom],
   },

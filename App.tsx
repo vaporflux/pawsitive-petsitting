@@ -296,7 +296,13 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
   const dateObj = new Date(displayY, displayM - 1, displayD);
   const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const contacts = state.emergencyContacts || { primary: { name: '', phone: '' }, secondary: { name: '', phone: '' }, vet: { name: '', phone: '' } };
+  // Robust contact handling for legacy data support to prevent crashes
+  const rawContacts = (state.emergencyContacts || {}) as any;
+  const contacts = { 
+    owner: rawContacts?.owner || rawContacts?.primary || { name: '', phone: '' }, 
+    secondary: rawContacts?.secondary || { name: '', phone: '' }, 
+    vet: rawContacts?.vet || { name: '', phone: '' } 
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 relative">
@@ -326,12 +332,12 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
                <button onClick={() => setShowEmergency(false)} className="text-white hover:bg-rose-600 p-1 rounded-lg"><X size={24} /></button>
              </div>
              <div className="p-6 space-y-4">
-                {contacts.primary?.phone ? (
-                  <a href={`tel:${contacts.primary.phone}`} className="flex items-center p-4 bg-slate-50 rounded-xl hover:bg-rose-50 group transition-colors">
+                {contacts.owner?.phone ? (
+                  <a href={`tel:${contacts.owner.phone}`} className="flex items-center p-4 bg-slate-50 rounded-xl hover:bg-rose-50 group transition-colors">
                     <Phone className="text-rose-500 mr-4" />
-                    <div className="font-bold text-slate-800">{contacts.primary.name} <span className="block font-normal text-sm text-slate-500">{contacts.primary.phone}</span></div>
+                    <div className="font-bold text-slate-800">{contacts.owner.name} (Owner) <span className="block font-normal text-sm text-slate-500">{contacts.owner.phone}</span></div>
                   </a>
-                ) : <div className="p-4 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">No Primary Contact</div>}
+                ) : <div className="p-4 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">No Owner Contact</div>}
 
                 {contacts.secondary?.phone && (
                   <a href={`tel:${contacts.secondary.phone}`} className="flex items-center p-4 bg-slate-50 rounded-xl hover:bg-rose-50 group transition-colors">
@@ -464,7 +470,7 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
               onToggle={toggleTask}
               onCompleteAll={completeAllInSlot}
               isReadOnly={isOwnerMode}
-              ownerPhone={contacts.primary.phone}
+              ownerPhone={contacts.owner.phone}
             />
           ))}
         </section>

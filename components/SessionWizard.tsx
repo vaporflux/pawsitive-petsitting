@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { DogConfig, DogColor, EmergencyContacts } from '../types';
 import { createSession, checkSessionExists } from '../services/storageService';
-import { ChevronLeft, Dog, Check, Loader2, Calendar, User, ChevronRight, Phone, ShieldAlert } from 'lucide-react';
+import { ChevronLeft, Dog, Check, Loader2, Calendar, User, ChevronRight, Phone, ShieldAlert, ChevronDown } from 'lucide-react';
 
 interface SessionWizardProps {
   onComplete: (sessionId: string) => void;
@@ -23,8 +23,8 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
   const [dogs, setDogs] = useState<DogConfig[]>([{ name: '', color: 'blue' }]);
 
   // Step 3: Emergency Contacts
-  const [primaryName, setPrimaryName] = useState('');
-  const [primaryPhone, setPrimaryPhone] = useState('');
+  const [ownerName, setOwnerName] = useState('');
+  const [ownerPhone, setOwnerPhone] = useState('');
   const [secondaryName, setSecondaryName] = useState('');
   const [secondaryPhone, setSecondaryPhone] = useState('');
   const [vetName, setVetName] = useState('');
@@ -72,15 +72,11 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
 
   // Generate a Friendly Code: SITTER-NUMBER (e.g., SARAH-42)
   const generateFriendlyCode = () => {
-    // 1. Sitter First Name (Cleaned, only letters)
     const sitterPart = (sitterName.split(' ')[0] || 'SITTER')
       .replace(/[^a-zA-Z]/g, '')
       .substring(0, 10)
       .toUpperCase();
-
-    // 2. Random 2-digit number (10-99)
     const num = Math.floor(Math.random() * 90 + 10);
-
     return `${sitterPart}-${num}`;
   };
 
@@ -105,13 +101,13 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
           }
        }
 
-       // Fallback: If Sarah is extremely popular and we failed 5 times, add a 3rd digit to ensure uniqueness
+       // Fallback
        if (!isUnique) {
           id = `${id}-${Math.floor(Math.random() * 9)}`;
        }
        
        const emergencyContacts: EmergencyContacts = {
-         primary: { name: primaryName || 'Primary', phone: primaryPhone },
+         owner: { name: ownerName, phone: ownerPhone },
          secondary: { name: secondaryName || 'Secondary', phone: secondaryPhone },
          vet: { name: vetName || 'Vet', phone: vetPhone }
        };
@@ -148,76 +144,82 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
           </div>
         </div>
 
-        <div className="p-8">
-{step === 1 && (
-  <div className="space-y-6">
-    {/* Sitter Name */}
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1">Sitter Name</label>
-      <div className="relative">
-        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-        <input
-          value={sitterName}
-          onChange={e => setSitterName(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
-          placeholder="e.g. Sarah"
-        />
-      </div>
-    </div>
+        <div className="p-5 sm:p-8">
+          {step === 1 && (
+            <div className="space-y-6">
+              {/* Sitter Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Sitter Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    value={sitterName}
+                    onChange={e => setSitterName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+                    placeholder="e.g. Sarah"
+                  />
+                </div>
+              </div>
 
-    {/* Start Date */}
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-      <input
-        type="date"
-        value={startDate}
-        onChange={e => setStartDate(e.target.value)}
-        className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none [min-width:0]"
-      />
-    </div>
+              {/* Start Date */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={e => setStartDate(e.target.value)}
+                  className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none [min-width:0]"
+                />
+              </div>
 
-{/* Number of Days (wheel-style picker via native select) */}
-<div>
-  <label className="block text-sm font-medium text-slate-700 mb-1">
-    Number of Days
-  </label>
-  <select
-    value={totalDays}
-    onChange={e => setTotalDays(parseInt(e.target.value))}
-    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
-  >
-    {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
-      <option key={day} value={day}>
-        {day} {day === 1 ? 'day' : 'days'}
-      </option>
-    ))}
-  </select>
-</div>
+              {/* Number of Days */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Number of Days
+                </label>
+                <div className="relative">
+                  <select
+                    value={totalDays}
+                    onChange={e => setTotalDays(parseInt(e.target.value))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
+                  >
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>
+                        {day} {day === 1 ? 'day' : 'days'}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
+                </div>
+              </div>
 
-    {/* Next button */}
-    <button
-      disabled={!sitterName}
-      onClick={() => setStep(2)}
-      className="w-full bg-primary-600 disabled:opacity-50 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
-    >
-      Next <ChevronRight size={18} />
-    </button>
-  </div>
-)}
+              <button
+                disabled={!sitterName}
+                onClick={() => setStep(2)}
+                className="w-full bg-primary-600 disabled:opacity-50 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
+              >
+                Next <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
 
           {step === 2 && (
             <div className="space-y-6">
                <div>
                  <label className="block text-sm font-medium text-slate-700 mb-1">How many dogs?</label>
-                 <div className="bg-white p-3 rounded-xl border border-slate-200">
-                   <input 
-                     type="range"
-                     min="1" max="5"
+                 <div className="relative">
+                   <select
                      value={numDogs}
                      onChange={e => handleDogCountChange(parseInt(e.target.value))}
-                     className="w-full accent-primary-600 cursor-pointer"
-                   />
-                   <div className="text-center font-bold text-primary-600 text-lg mt-1">{numDogs} Dogs</div>
+                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none font-medium text-lg"
+                   >
+                     {Array.from({ length: 5 }, (_, i) => i + 1).map(num => (
+                       <option key={num} value={num}>
+                         {num} {num === 1 ? 'Dog' : 'Dogs'}
+                       </option>
+                     ))}
+                   </select>
+                   <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={18} />
                  </div>
                </div>
 
@@ -267,22 +269,22 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
               </div>
 
               <div className="space-y-4">
-                 {/* Primary */}
+                 {/* Owner Contact - Required */}
                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <label className="flex items-center gap-2 text-xs font-bold text-primary-700 uppercase mb-2">
-                      <User size={14} /> Primary Contact
+                      <User size={14} /> Owner Contact <span className="text-rose-500">*</span>
                     </label>
                     <input 
-                      value={primaryName}
-                      onChange={e => setPrimaryName(e.target.value)}
-                      placeholder="Name (e.g. Robert)"
+                      value={ownerName}
+                      onChange={e => setOwnerName(e.target.value)}
+                      placeholder="Owner Name"
                       className="w-full p-2 mb-2 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary-400"
                     />
                     <input 
-                      value={primaryPhone}
-                      onChange={e => setPrimaryPhone(formatPhoneNumber(e.target.value))}
+                      value={ownerPhone}
+                      onChange={e => setOwnerPhone(formatPhoneNumber(e.target.value))}
                       maxLength={14}
-                      placeholder="(555) 555-5555"
+                      placeholder="Mobile Phone (Required)"
                       type="tel"
                       className="w-full p-2 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary-400"
                     />
@@ -296,14 +298,14 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     <input 
                       value={secondaryName}
                       onChange={e => setSecondaryName(e.target.value)}
-                      placeholder="Name (e.g. Patty)"
+                      placeholder="Name (Optional)"
                       className="w-full p-2 mb-2 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary-400"
                     />
                     <input 
                       value={secondaryPhone}
                       onChange={e => setSecondaryPhone(formatPhoneNumber(e.target.value))}
                       maxLength={14}
-                      placeholder="(555) 555-5555"
+                      placeholder="Phone (Optional)"
                       type="tel"
                       className="w-full p-2 bg-white text-slate-900 border border-slate-200 rounded-lg text-sm outline-none focus:border-primary-400"
                     />
@@ -324,7 +326,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                       value={vetPhone}
                       onChange={e => setVetPhone(formatPhoneNumber(e.target.value))}
                       maxLength={14}
-                      placeholder="(555) 555-5555"
+                      placeholder="Vet Phone"
                       type="tel"
                       className="w-full p-2 bg-white text-slate-900 border border-rose-200 rounded-lg text-sm outline-none focus:border-rose-400"
                     />
@@ -333,7 +335,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
 
               <button 
                  onClick={handleSubmit}
-                 disabled={loading}
+                 disabled={loading || !ownerName || !ownerPhone}
                  className="w-full bg-primary-600 disabled:opacity-50 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
                >
                  {loading ? <Loader2 className="animate-spin" /> : <><Check size={18} /> Create & Get Code</>}

@@ -28,7 +28,7 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
 }) => {
   
   const getIcon = (activity: ActivityType) => {
-    return activity === ActivityType.Feeding ? <Utensils size={14} /> : <Droplets size={14} />;
+    return activity === ActivityType.Feeding ? <Utensils size={18} /> : <Droplets size={18} />;
   };
 
   const getDogColorClasses = (color: string) => {
@@ -47,27 +47,20 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
     return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   };
 
-const handleNotify = async () => {
-  if (!ownerPhone) return;
-
-  try {
-    await fetch("/api/send-activity-sms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: ownerPhone,
-        petNames: dogs.map(d => d.name),
-        slotLabel: slot.label
-      }),
-    });
-
-    // Optional: show a visual confirmation later
-    // alert("Owner notified!");
-  } catch (err) {
-    console.error("Failed to send SMS notification", err);
-  }
-};
-
+  const handleNotify = () => {
+    if (!ownerPhone) return;
+    
+    // Create a cheerful message
+    const text = `Pawsitive Update: The ${slot.label} is complete for ${dogs.map(d => d.name).join(', ')}! 🐾`;
+    
+    // Clean phone number (remove non-digits)
+    const cleanPhone = ownerPhone.replace(/[^\d]/g, '');
+    
+    // Construct SMS link (works on iOS and Android)
+    const url = `sms:${cleanPhone}?&body=${encodeURIComponent(text)}`;
+    
+    window.location.href = url;
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-4">
@@ -102,17 +95,19 @@ const handleNotify = async () => {
         )}
       </div>
       
-      <div className="p-2">
+      <div className="divide-y divide-slate-50">
         {dogs.map((dog) => (
-          <div key={dog.name} className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors gap-3 sm:gap-0">
+          <div key={dog.name} className="flex flex-col p-3 gap-3">
+            {/* Dog Header */}
             <div className="flex items-center gap-3">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold uppercase ${getDogColorClasses(dog.color)}`}>
                 {dog.name[0]}
               </div>
-              <span className="text-slate-700 font-medium text-sm">{dog.name}</span>
+              <span className="text-slate-700 font-bold text-sm">{dog.name}</span>
             </div>
             
-            <div className="flex gap-2 flex-wrap">
+            {/* Activity Buttons Grid */}
+            <div className="grid grid-cols-2 gap-3">
               {slot.activities.map((activity) => {
                  const taskId = `${dateStr}-${slot.id}-${dog.name}-${activity}`;
                  const isDone = completedTasks[taskId];
@@ -124,22 +119,24 @@ const handleNotify = async () => {
                     onClick={() => !isReadOnly && onToggle(taskId)}
                     disabled={isReadOnly}
                     className={`
-                      relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200
+                      relative flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold border transition-all duration-200 active:scale-[0.98] touch-manipulation
                       ${isDone 
-                        ? 'bg-primary-500 border-primary-500 text-white shadow-sm' 
-                        : 'bg-white border-slate-200 text-slate-500 hover:border-primary-300 hover:text-primary-600'}
+                        ? 'bg-primary-500 border-primary-500 text-white shadow-md shadow-primary-200' 
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-primary-300 hover:text-primary-600 hover:bg-slate-50'}
                       ${isReadOnly ? 'cursor-default opacity-90' : ''}
                     `}
                    >
-                    {isDone && <Check size={12} className="animate-in zoom-in duration-200" />}
-                    <span className="flex items-center gap-1">
-                      {getIcon(activity)} {activity}
+                    {isDone && <Check size={18} className="animate-in zoom-in duration-200" />}
+                    <div className="flex flex-col items-center leading-none gap-1">
+                      <span className="flex items-center gap-2">
+                        {getIcon(activity)} {activity}
+                      </span>
                       {isDone && timestamp && (
-                        <span className="text-[10px] italic text-white/80 ml-1 font-normal border-l border-white/30 pl-1.5">
+                        <span className="text-[10px] font-medium opacity-90">
                           {formatTime(timestamp)}
                         </span>
                       )}
-                    </span>
+                    </div>
                    </button>
                  );
               })}
