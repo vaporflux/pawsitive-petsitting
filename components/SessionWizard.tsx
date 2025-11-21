@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DogConfig, DogColor, EmergencyContacts } from '../types';
 import { createSession, checkSessionExists } from '../services/storageService';
 import { ChevronLeft, Dog, Check, Loader2, Calendar, User, ChevronRight, Phone, ShieldAlert, ChevronDown } from 'lucide-react';
@@ -17,7 +16,8 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
   const [sitterName, setSitterName] = useState('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [totalDays, setTotalDays] = useState(3);
-  
+  const dateInputRef = useRef<HTMLInputElement | null>(null);
+
   // Step 2: Dogs
   const [numDogs, setNumDogs] = useState(1);
   const [dogs, setDogs] = useState<DogConfig[]>([{ name: '', color: 'blue' }]);
@@ -49,6 +49,19 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
       return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
     }
     return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+  };
+
+  // Helper to display the date nicely (e.g. "Wednesday, Nov 19, 2025")
+  const getFormattedDateDisplay = (isoDate: string) => {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
   const handleDogCountChange = (count: number) => {
@@ -165,28 +178,53 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                  </div>
                </div>
                
-               {/* Stacked Layout: Each field on its own line */}
+               {/* Stacked Layout: Start Date with clickable, formatted display */}
                <div>
                  <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input 
-                      type="date"
-                      value={startDate}
-                      onChange={e => setStartDate(e.target.value)}
-                      // Added appearance-none and min-w-0 to fix iOS rendering issues
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none min-w-0 text-left"
-                    />
+                   {/* Fully clickable display field */}
+                   <button
+                     type="button"
+                     onClick={() => {
+                       try {
+                         dateInputRef.current?.showPicker();
+                       } catch {
+                         dateInputRef.current?.focus();
+                       }
+                     }}
+                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 flex items-center text-left cursor-pointer"
+                   >
+                     <span className="text-sm">
+                       {getFormattedDateDisplay(startDate)}
+                     </span>
+                   </button>
+
+                   {/* Calendar icon */}
+                   <Calendar
+                     className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                     size={18}
+                   />
+
+                   {/* Hidden native date input that actually controls the value */}
+                   <input
+                     ref={dateInputRef}
+                     type="date"
+                     value={startDate}
+                     onChange={e => setStartDate(e.target.value)}
+                     className="sr-only"
+                   />
                  </div>
                </div>
+
                
+               {/* Stacked Layout: Number of Days */}
                <div>
                  <label className="block text-sm font-medium text-slate-700 mb-1">Number of Days</label>
                  <div className="relative">
                    <select 
                      value={totalDays}
                      onChange={e => setTotalDays(parseInt(e.target.value))}
-                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
+                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none cursor-pointer"
                    >
                      {Array.from({ length: 30 }, (_, i) => i + 1).map(day => (
                        <option key={day} value={day}>
