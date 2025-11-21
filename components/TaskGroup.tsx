@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { TimeSlot, ActivityType, DogConfig } from '../types';
-import { Check, Utensils, Droplets, CheckCircle2 } from 'lucide-react';
+import { Check, Utensils, Droplets, CheckCircle2, MessageCircle } from 'lucide-react';
 
 interface TaskGroupProps {
   slot: TimeSlot;
@@ -12,6 +12,7 @@ interface TaskGroupProps {
   onToggle: (taskId: string) => void;
   onCompleteAll: (slotId: string) => void;
   isReadOnly: boolean;
+  ownerPhone?: string;
 }
 
 export const TaskGroup: React.FC<TaskGroupProps> = ({ 
@@ -22,7 +23,8 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
   dogs,
   onToggle, 
   onCompleteAll,
-  isReadOnly 
+  isReadOnly,
+  ownerPhone
 }) => {
   
   const getIcon = (activity: ActivityType) => {
@@ -45,6 +47,23 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
     return new Date(timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   };
 
+  const handleNotify = () => {
+    if (!ownerPhone) return;
+    
+    // Create a cheerful message
+    const text = `Pawsitive Update: The ${slot.label} is complete for ${dogs.map(d => d.name).join(', ')}! 🐾`;
+    
+    // Clean phone number (remove non-digits)
+    const cleanPhone = ownerPhone.replace(/[^\d]/g, '');
+    
+    // Construct SMS link (works on iOS and Android)
+    // Note: '&' is often safer for iOS to separate body, '?' is standard. 
+    // Using the most compatible hybrid approach usually involves just window.open
+    const url = `sms:${cleanPhone}?&body=${encodeURIComponent(text)}`;
+    
+    window.location.href = url;
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-4">
       <div className="bg-primary-50/50 px-4 py-3 border-b border-primary-100/50 flex justify-between items-center">
@@ -55,13 +74,26 @@ export const TaskGroup: React.FC<TaskGroupProps> = ({
           </span>
         </div>
         {!isReadOnly && (
-          <button 
-            onClick={() => onCompleteAll(slot.id)}
-            className="text-xs flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:bg-primary-100/50 px-2 py-1 rounded-lg transition-colors"
-          >
-            <CheckCircle2 size={14} />
-            Check All
-          </button>
+          <div className="flex gap-2">
+            {ownerPhone && (
+               <button 
+                 onClick={handleNotify}
+                 title="Text Owner"
+                 className="text-xs flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:bg-primary-100/50 px-2 py-1 rounded-lg transition-colors border border-transparent hover:border-primary-200"
+               >
+                 <MessageCircle size={14} />
+                 <span className="hidden sm:inline">Notify</span>
+               </button>
+            )}
+            <button 
+              onClick={() => onCompleteAll(slot.id)}
+              className="text-xs flex items-center gap-1 text-primary-600 hover:text-primary-700 hover:bg-primary-100/50 px-2 py-1 rounded-lg transition-colors border border-transparent hover:border-primary-200"
+            >
+              <CheckCircle2 size={14} />
+              <span className="hidden sm:inline">Check All</span>
+              <span className="sm:hidden">All</span>
+            </button>
+          </div>
         )}
       </div>
       

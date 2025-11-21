@@ -464,6 +464,7 @@ const SessionTracker: React.FC<SessionTrackerProps> = ({ sessionId, onExit }) =>
               onToggle={toggleTask}
               onCompleteAll={completeAllInSlot}
               isReadOnly={isOwnerMode}
+              ownerPhone={contacts.primary.phone}
             />
           ))}
         </section>
