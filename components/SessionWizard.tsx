@@ -164,27 +164,29 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                  </div>
                </div>
                
-               {/* Fixed Grid Layout: Exactly 2 columns of equal width */}
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="min-w-0">
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-                   <input 
-                     type="date"
-                     value={startDate}
-                     onChange={e => setStartDate(e.target.value)}
-                     className="w-full px-2 sm:px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 text-sm sm:text-base"
-                   />
+               {/* Stacked Layout: Each field on its own line */}
+               <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+                 <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input 
+                      type="date"
+                      value={startDate}
+                      onChange={e => setStartDate(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+                    />
                  </div>
-                 <div className="min-w-0">
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Days</label>
-                   <input 
-                     type="number"
-                     min="1" max="30"
-                     value={totalDays}
-                     onChange={e => setTotalDays(parseInt(e.target.value))}
-                     className="w-full px-2 sm:px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 text-sm sm:text-base"
-                   />
-                 </div>
+               </div>
+               
+               <div>
+                 <label className="block text-sm font-medium text-slate-700 mb-1">Number of Days</label>
+                 <input 
+                   type="number"
+                   min="1" max="30"
+                   value={totalDays}
+                   onChange={e => setTotalDays(parseInt(e.target.value))}
+                   className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+                 />
                </div>
                
                <button 
