@@ -158,7 +158,7 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     <input 
                       value={sitterName}
                       onChange={e => setSitterName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+className="w-full max-w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900 appearance-none"
                       placeholder="e.g. Sarah"
                     />
                  </div>
