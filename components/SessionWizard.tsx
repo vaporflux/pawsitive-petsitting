@@ -163,27 +163,32 @@ export const SessionWizard: React.FC<SessionWizardProps> = ({ onComplete, onCanc
                     />
                  </div>
                </div>
-               <div className="grid grid-cols-[2fr_1fr] gap-4">
-                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
-                   <input 
-                     type="date"
-                     value={startDate}
-                     onChange={e => setStartDate(e.target.value)}
-                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
-                   />
-                 </div>
-                 <div>
-                   <label className="block text-sm font-medium text-slate-700 mb-1">Days</label>
-                   <input 
-                     type="number"
-                     min="1" max="30"
-                     value={totalDays}
-                     onChange={e => setTotalDays(parseInt(e.target.value))}
-                     className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
-                   />
-                 </div>
-               </div>
+<div className="space-y-6">
+  {/* Start Date */}
+  <div>
+    <label className="block text-sm font-medium text-slate-700 mb-1">Start Date</label>
+    <input
+      type="date"
+      value={startDate}
+      onChange={e => setStartDate(e.target.value)}
+      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+    />
+  </div>
+
+  {/* Days */}
+  <div>
+    <label className="block text-sm font-medium text-slate-700 mb-1">Days</label>
+    <input
+      type="number"
+      min="1"
+      max="30"
+      value={totalDays}
+      onChange={e => setTotalDays(parseInt(e.target.value))}
+      className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 transition-all bg-white text-slate-900"
+    />
+  </div>
+</div>
+
                <button 
                  disabled={!sitterName}
                  onClick={() => setStep(2)}
